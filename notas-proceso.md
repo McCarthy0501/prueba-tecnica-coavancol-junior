@@ -1,1 +1,1 @@
-buenos dias, estoy realizando la prueba, la parte que hasta ahora se me a dificultado es perzonalizar un hook , 
+buenos dias, estoy realizando la prueba, la parte que hasta ahora se me a dificultado es perzonalizar un hook , y realizar la parte del back, y la ultima parte no la comprendi del todo. 

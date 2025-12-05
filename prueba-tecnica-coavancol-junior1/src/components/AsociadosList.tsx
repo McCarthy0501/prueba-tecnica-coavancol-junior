@@ -1,106 +1,93 @@
-import { useState, useEffect } from "react";
+import React from 'react';
+import { useAsociados, TODOS_LOS_ESTADOS } from '../hooks/Useasociados'; // Importamos el hook y las constantes
 
-// Definición de la Interfaz (Estructura de la data)
-interface Usuario {
-    id: number;
-    estado_pipeline: string;
-    Nombre: string;
-    Identificación: number;
-}
-
-// Lista fija de opciones para el filtro select
-const OPCIONES_FILTRO = [
-    'Todos',
-    'Prospecto',
-    'Expediente en Construcción',
-    'Pendiente Jurídico',
-    'Pendiente Cierre de Crédito'
+// Lista fija para el select de filtro global
+const OPCIONES_FILTRO_GLOBAL = [
+    'Todos', 'Prospecto', 'Expediente en Construcción', 
+    'Pendiente Jurídico', 'Pendiente Cierre de Crédito'
 ];
 
+// Estilos para el Diseño Limpio y Organizado
+const styles: { [key: string]: React.CSSProperties } = {
+    container: {
+        maxWidth: '900px',
+        margin: '0 auto',
+        padding: '30px',
+        fontFamily: 'Arial, sans-serif',
+        backgroundColor: '#f9f9f9',
+        borderRadius: '8px',
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+    },
+    header: {
+        borderBottom: '2px solid #007bff',
+        paddingBottom: '10px',
+        marginBottom: '20px',
+        color: '#333',
+    },
+    filtroContainer: {
+        marginBottom: '25px',
+        padding: '15px',
+        backgroundColor: '#e9ecef',
+        borderRadius: '6px',
+        display: 'flex',
+        alignItems: 'center',
+    },
+    card: {
+        border: '1px solid #dee2e6',
+        borderRadius: '4px',
+        padding: '15px',
+        marginBottom: '10px',
+        backgroundColor: '#fff',
+        transition: 'opacity 0.2s',
+    },
+    select: {
+        marginLeft: '10px',
+        padding: '8px 12px',
+        borderRadius: '4px',
+        border: '1px solid #ced4da',
+    }
+};
+
 export const AsociadosList = () => {
-    // 1. Estados
-    const [usuarios, setUsuarios] = useState<Usuario[]>([]);
-    // Estado para saber si la data está cargando
-    const [isLoading, setIsLoading] = useState<boolean>(true); 
-    // Estado para el filtro seleccionado, inicializado en 'Todos'
-    const [filtroPipeline, setFiltroPipeline] = useState<string>('Todos'); 
-    // Estado para manejar posibles errores de la petición
-    const [error, setError] = useState<string | null>(null);
+    // 1. Usar el Hook Personalizado
+    const { 
+        usuariosFiltrados, 
+        isLoading, 
+        error, 
+        filtroPipeline, 
+        setFiltroPipeline,
+        isUpdating,
+        handleActualizarEstado // Tarea 2: Función de actualización
+    } = useAsociados();
 
-    // 2. useEffect para la carga de datos y manejo de errores
-    useEffect(() => {
-        const solicitud = async () => {
-            setIsLoading(true); // Inicia la carga
-            setError(null);    // Limpia errores previos
-            try {
-                const url = "https://raw.githubusercontent.com/managerrojo/COAVANCOL-Prueba-T-cnica-/refs/heads/main/IndexAsociados";
-                const peticion = await fetch(url);
-
-                if (!peticion.ok) {
-                    throw new Error(`Error en la petición: ${peticion.status}`);
-                }
-                
-                // Aseguramos que la data coincida con nuestra interfaz
-                const data: Usuario[] = await peticion.json(); 
-                setUsuarios(data);
-
-            } catch (err) {
-                console.error("Error al obtener datos:", err);
-                setError("No se pudieron cargar los datos de asociados.");
-                setUsuarios([]); // Asegura que el array esté vacío
-            } finally {
-                setIsLoading(false); // Finaliza la carga
-            }
-        }
-        solicitud();
-    }, []);
-
-    // 3. Manejador de Cambio del Select
-    const handleFiltroChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setFiltroPipeline(event.target.value);
-    };
-
-    // 4. Lógica de Filtrado (Se ejecuta en cada renderizado)
-    const usuariosFiltrados = usuarios.filter(usuario => {
-        if (filtroPipeline === 'Todos') {
-            return true; // Mostrar todos si el filtro es 'Todos'
-        }
-        // Mostrar solo los que coincidan exactamente con el filtro seleccionado
-        return usuario.estado_pipeline === filtroPipeline;
-    });
-
-    // 5. Renderizado Condicional
-    
-    // Muestra el mensaje de error si existe
+    // 2. Renderizado Condicional
     if (error) {
         return (
-            <div style={{ padding: '20px', color: 'red' }}>
-                <h2> Error de Carga</h2>
+            <div style={{ ...styles.container, color: 'red' }}>
+                <h2 style={styles.header}> Error de Carga</h2>
                 <p>{error}</p>
             </div>
         );
     }
     
-    // Muestra el estado de carga
     if (isLoading) {
-        return <div style={{ padding: '20px' }}>Cargando usuarios...</div>;
+        return <div style={styles.container}>Cargando asociados...</div>;
     }
 
     return (
-        <div style={{ padding: '20px' }}>
-            <h2>Lista de Asociados</h2>
+        <div style={styles.container}>
+            <h2 style={styles.header}>👥 Lista de Asociados</h2>
             
-            {/* Implementación del Filtro Select */}
-            <div style={{ marginBottom: '20px' }}>
-                <label htmlFor="filtro-estado">Filtrar por Estado de Pipeline:</label>
+            {/* Filtro Global */}
+            <div style={styles.filtroContainer}>
+                <label htmlFor="filtro-estado">Filtrar por Estado:</label>
                 <select 
                     id="filtro-estado" 
                     value={filtroPipeline} 
-                    onChange={handleFiltroChange}
-                    style={{ marginLeft: '10px', padding: '5px' }}
+                    onChange={(e) => setFiltroPipeline(e.target.value)}
+                    style={styles.select}
                 >
-                    {/* Mapea la lista fija de opciones */}
-                    {OPCIONES_FILTRO.map(estado => (
+                    {OPCIONES_FILTRO_GLOBAL.map(estado => (
                         <option key={estado} value={estado}>
                             {estado}
                         </option>
@@ -108,19 +95,35 @@ export const AsociadosList = () => {
                 </select>
             </div>
 
-            <hr />
-
-            {/* Muestra mensaje si no hay resultados tras el filtro */}
+            {/* Resultados */}
             <div>
                 {usuariosFiltrados.length === 0 ? (
                     <p>No se encontraron asociados en el estado: **{filtroPipeline}**.</p>
                 ) : (
-                    // Mapeo de la lista FILTRADA
                     usuariosFiltrados.map((usuario) => (
-                        <div key={usuario.id} style={{ border: '1px solid #ddd', padding: '10px', margin: '10px 0' }}>
-                            <p>Identificación: **{usuario.Identificación}**</p>
-                            <p>Nombre: **{usuario.Nombre}**</p>
-                            <p>Estado Pipeline: **{usuario.estado_pipeline}**</p>
+                        // La opacidad baja mientras se actualiza (Feedback visual)
+                        <div key={usuario.id} style={{ ...styles.card, opacity: isUpdating === usuario.id ? 0.6 : 1 }}>
+                            
+                            <h3>**{usuario.Nombre}** (ID: {usuario.Identificación})</h3>
+                            
+                            {/* SELECT PARA CAMBIAR EL ESTADO INDIVIDUAL (Tarea 2) */}
+                            <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center' }}>
+                                <label>Estado Actual: **{usuario.estado_pipeline}** | Cambiar a:</label>
+                                <select
+                                    value={usuario.estado_pipeline}
+                                    onChange={(e) => handleActualizarEstado(usuario.id, e.target.value)}
+                                    disabled={isUpdating === usuario.id} // Deshabilitado durante la carga
+                                    style={styles.select}
+                                >
+                                    {/* Opciones de estados completas para la actualización */}
+                                    {TODOS_LOS_ESTADOS.map(estado => (
+                                        <option key={estado} value={estado}>
+                                            {estado}
+                                        </option>
+                                    ))}
+                                </select>
+                                {isUpdating === usuario.id && <span style={{ marginLeft: '10px', color: '#007bff' }}>🔄 Guardando...</span>}
+                            </div>
                         </div>
                     ))
                 )}
