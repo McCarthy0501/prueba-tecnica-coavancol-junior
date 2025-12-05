@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAsociados, TODOS_LOS_ESTADOS } from '../hooks/Useasociados'; // Importamos el hook y las constantes
 
-// Lista fija para el select de filtro global
+// Lista fija para el select de filtro 
 const OPCIONES_FILTRO_GLOBAL = [
     'Todos', 'Prospecto', 'Expediente en Construcción', 
     'Pendiente Jurídico', 'Pendiente Cierre de Crédito'
@@ -57,7 +57,7 @@ export const AsociadosList = () => {
         filtroPipeline, 
         setFiltroPipeline,
         isUpdating,
-        handleActualizarEstado // Tarea 2: Función de actualización
+        handleActualizarEstado 
     } = useAsociados();
 
     // 2. Renderizado Condicional
@@ -95,7 +95,7 @@ export const AsociadosList = () => {
                 </select>
             </div>
 
-            {/* Resultados */}
+            {/* Renderizado */}
             <div>
                 {usuariosFiltrados.length === 0 ? (
                     <p>No se encontraron asociados en el estado: **{filtroPipeline}**.</p>

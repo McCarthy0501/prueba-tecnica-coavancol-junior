@@ -1,20 +1,20 @@
 import { useState, useEffect, useMemo } from "react";
 
-// --- Tipos e Interfaces ---
+
 interface Usuario {
     id: number;
     estado_pipeline: string;
-    Nombre: string; // <-- Usada para ordenar
+    Nombre: string; 
     Identificación: number;
 }
 
-// Lista Completa de Estados (usada para la actualización y el select individual)
+
 export const TODOS_LOS_ESTADOS = [
     "Prospecto", "Expediente en Construcción", "Pendiente Jurídico", "Pendiente Cierre de Crédito", 
     "Pendiente Firma y Litivo", "Pendiente Revisión Abogado", "Cartera Activa", "Desembolsado/Finalizado",
 ];
 
-// Lógica de Transiciones (Para el PLUS de la Tarea 2)
+// Lógica de Transiciones 
 const TRANSICIONES_PERMITIDAS: { [key: string]: string[] } = {
     "Prospecto": ["Expediente en Construcción", "Pendiente Jurídico"],
     "Expediente en Construcción": ["Pendiente Jurídico", "Prospecto"],
@@ -27,7 +27,7 @@ const TRANSICIONES_PERMITIDAS: { [key: string]: string[] } = {
 };
 
 
-// --- SIMULACIÓN DE LA API DE BACKEND ---
+//  Back
 async function actualizarEstadoEnDB(asociadoId: string, nuevoEstado: string, estadoActual: string): Promise<void> {
     console.log(`[API CALL] Solicitando cambiar ${asociadoId} de ${estadoActual} a ${nuevoEstado}`);
     
@@ -47,7 +47,7 @@ async function actualizarEstadoEnDB(asociadoId: string, nuevoEstado: string, est
 }
 
 /**
- * Hook personalizado para manejar la lógica de datos, filtro, ordenamiento y actualización.
+ * Hook personalizado 
  */
 export const useAsociados = () => {
     const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -56,7 +56,7 @@ export const useAsociados = () => {
     const [filtroPipeline, setFiltroPipeline] = useState<string>('Todos');
     const [isUpdating, setIsUpdating] = useState<number | null>(null); // ID del que está cargando
 
-    // Lógica de Carga Inicial
+   
     useEffect(() => {
         const solicitud = async () => {
             setIsLoading(true);
@@ -83,7 +83,7 @@ export const useAsociados = () => {
         solicitud();
     }, []);
 
-    // LÓGICA CLAVE: ORDENAMIENTO Y FILTRADO (Tarea 1)
+    // Ordenamiento
     const usuariosFiltradosYOrdenados = useMemo(() => {
         // 1. Filtrado
         const filtrados = usuarios.filter(usuario => {
@@ -93,7 +93,7 @@ export const useAsociados = () => {
             return usuario.estado_pipeline === filtroPipeline;
         });
 
-        // 2. Ordenamiento Alfabético por Nombre (Requisito)
+       
         return filtrados.sort((a, b) => {
             const nombreA = a.Nombre.toUpperCase();
             const nombreB = b.Nombre.toUpperCase();
@@ -105,7 +105,7 @@ export const useAsociados = () => {
     }, [usuarios, filtroPipeline]);
 
 
-    // FUNCIÓN DE ACTUALIZACIÓN DE ESTADO (Tarea 2)
+    // intento de actualizacion tarea 2
     const handleActualizarEstado = async (id: number, nuevoEstado: string) => {
         const usuario = usuarios.find(u => u.id === id);
         if (!usuario) return;
@@ -114,20 +114,20 @@ export const useAsociados = () => {
         
         setIsUpdating(id); 
         
-        // Optimistic Update: Cambiamos la UI primero para que se sienta rápido
+        
         setUsuarios(oldUsers => 
             oldUsers.map(u => u.id === id ? { ...u, estado_pipeline: nuevoEstado } : u)
         );
 
         try {
-            // Llama a la función simulada de backend (donde va la lógica de TAREA 2)
+            // Llama a la función Back
             await actualizarEstadoEnDB(String(id), nuevoEstado, estadoAnterior);
             
         } catch (err) {
             console.error("Error al actualizar el estado:", err);
             alert(`Fallo al actualizar el estado . Revertiendo cambio en la interfaz.`);
             
-            // Revertir el cambio local si la API falla (Manejo de errores)
+            
             setUsuarios(oldUsers => 
                 oldUsers.map(u => u.id === id ? { ...u, estado_pipeline: estadoAnterior } : u)
             );
